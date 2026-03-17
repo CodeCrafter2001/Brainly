@@ -58,27 +58,52 @@ if(!parseData.success){
 })
 
 //signup route
-app.post("/password/v1/signin ",async(req,res)=>{
-const username= req.body.username;
-const password= req.body.password;
-const existingUser= await UserModel.findOne({
-    username,
-    password
-})
-if(existingUser){
-    const token= jwt.sign({
-        id: existingUser._id
-    }, JWT_PASSWORD);
-    res.json({
-    })
+app.post("/api/v1/signin", async (req, res) => {
+  const parsedData = signinSchema.safeParse(req.body);
 
-}else{
-res.status(403).json({
-    message:"Incorrect credentials"
-})
-}
-})
+  if (!parsedData.success) {
+    return res.status(400).json({
+      message: "Invalid input",
+      errors: parsedData.error.flatten(),
+    });
+  }
 
+  const { username, password } = parsedData.data;
+
+  try {
+    const existingUser = await UserModel.findOne({ username });
+
+    if (!existingUser || !existingUser.password) {
+      return res.status(403).json({
+        message: "Incorrect credentials",
+      });
+    }
+
+    const passwordMatched = await bcrypt.compare(password, existingUser.password);
+
+    if (!passwordMatched) {
+      return res.status(403).json({
+        message: "Incorrect credentials",
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        id: existingUser._id,
+      },
+      JWT_PASSWORD
+    );
+
+    return res.json({
+      message: "Signin successful",
+      token,
+    });
+  } catch (e) {
+    return res.status(500).json({
+      message: "Something went wrong during signin",
+    });
+  }
+});
 //post content route
 app.post("/api/v1/content",userMiddleware,async (req,res)=>{
 const link= req.body.link;
