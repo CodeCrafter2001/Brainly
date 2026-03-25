@@ -15,7 +15,7 @@ app.use(cors());
 //zod validation
 const signupSchema= z.object({
     username: z.string().min(3).max(30),
-    password: z.string().min(6).max(100);
+    password: z.string().min(6).max(100),
 })
 const signinSchema = z.object({
   username: z.string().min(3).max(30),
@@ -58,7 +58,7 @@ if(!parseData.success){
 })
 
 //signup route
-app.post("/api/v1/signin", async (req, res) => {
+app.post("/api/v1/login", async (req, res) => {
   const parsedData = signinSchema.safeParse(req.body);
 
   if (!parsedData.success) {
@@ -122,10 +122,26 @@ res.json({
 
 // get content route
 app.get ("/api/v1/content",userMiddleware, async(req,res)=>{
+  // @ts-ignore
+  const userId= req.userId;
+  const content= await ContentModel.find({
+    userId: userId
+  }).populate("userId", "username")
+  res.json({
+    content
+  })
 
 })
-app.delete ("/api/v1/content",(req,res)=>{
-
+app.delete ("/api/v1/content",async(req,res)=> {
+ const contentId= req.body.contentId;
+ await ContentModel.deleteMany({
+  contentId,
+  userId: req.userId
+ })
+ res.json({
+  message: "deleted"
+ })
+ 
 })
 app.post ("/api/v1/brain/share",(req,res)=>{
 

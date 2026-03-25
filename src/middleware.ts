@@ -15,7 +15,7 @@ export const userMiddleware = (
   res: Response,
   next: NextFunction
 ) => {
-  const header = req.headers.authorization;
+ const header = req.headers["authorization"];
 
   if (!header) {
     return res.status(403).json({
@@ -24,7 +24,7 @@ export const userMiddleware = (
   }
 
   try {
-    const decoded = jwt.verify(header, JWT_PASSWORD);
+    const decoded = jwt.verify(header as string, JWT_PASSWORD);
 
     if (typeof decoded === "string") {
       return res.status(403).json({
