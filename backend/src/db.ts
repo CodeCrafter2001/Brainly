@@ -1,6 +1,14 @@
 import mongoose ,{Schema,model}from "mongoose";
+import  dotenv from "dotenv";
+dotenv.config();
 
- mongoose.connect("mongodb+srv://Brainly:Anmol%4020012004@brainly.c204sv7.mongodb.net/brainly");
+const mongoUrl = process.env.MONGO_URL;
+
+if (!mongoUrl) {
+  throw new Error("❌ MONGO_URL is not defined in .env");
+}
+
+mongoose.connect(mongoUrl);
  console.log("mongodb connected");
 
  const UserSchema= new Schema({

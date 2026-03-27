@@ -16,14 +16,15 @@ export const userMiddleware = (
   res: Response,
   next: NextFunction
 ) => {
-  const header = req.headers["authorization"];
+  const authHeader = req.headers.authorization;
 
-  if (!header) {
+  if (!authHeader) {
     return res.status(403).json({ message: "You are not logged in" });
   }
 
   try {
-    const decoded = jwt.verify(header as string, JWT_PASSWORD);
+    const token= authHeader.startsWith('Bearer') ? authHeader.split(" ")[1] : authHeader;
+    const decoded = jwt.verify(authHeader as string, JWT_PASSWORD);
 
     if (typeof decoded === "string") {
       return res.status(403).json({ message: "Invalid token" });

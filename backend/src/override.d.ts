@@ -1,4 +1,4 @@
-
+import type mongoose from "mongoose";
 export {};
 
 declare global {
