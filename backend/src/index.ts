@@ -1,5 +1,4 @@
 import jwt from 'jsonwebtoken';
-import mongoose from 'mongoose';
 import express from 'express';
 import {z} from 'zod';
 import bcrypt from "bcrypt";
@@ -8,7 +7,9 @@ import { random } from './utils.js';
 import cors from "cors";
 import { userMiddleware } from './middleware.js';
 import { JWT_PASSWORD } from './config.js';
-import { error } from 'node:console';
+import dotenv from "dotenv";
+dotenv.config();
+
 const app= express();
 app.use(express.json());
 app.use(cors());
@@ -49,11 +50,11 @@ if(!parseData.success){
         res.json({
             message:"User signed Up"
         })
-    }catch(e){
-        res.status(401).json({
-            message:"User already exists"
-        })
-    }
+    }catch (e) {
+  return res.status(500).json({
+    message: "Something went wrong during signup",
+  });
+}
     
 
 })
@@ -113,7 +114,7 @@ await ContentModel.create({
     link,
     type,
     title: req.body.title,  
-    userId: req.userId,
+    userId: req.userId!,
     tags:[]
 })
 res.json({
@@ -124,7 +125,7 @@ res.json({
 // get content route
 app.get ("/api/v1/content",userMiddleware, async(req,res)=>{
   // @ts-ignore
-  const userId= req.userId;
+  const userId= req.userId!;
   const content= await ContentModel.find({
     userId: userId
   }).populate("userId", "username")
@@ -135,24 +136,25 @@ app.get ("/api/v1/content",userMiddleware, async(req,res)=>{
 })
 
 // delete content route
-app.delete ("/api/v1/content",userMiddleware,async(req,res)=> {
- const contentId= req.body.contentId;
- await ContentModel.deleteMany({
-  contentId,
-  userId: req.userId
- })
- res.json({
-  message: "deleted"
- })
- 
-})
+app.delete("/api/v1/content", userMiddleware, async (req, res) => {
+  const contentId = req.body.contentId;
+
+  await ContentModel.deleteOne({
+    _id: contentId,
+    userId: req.userId!,
+  });
+
+  res.json({
+    message: "deleted",
+  });
+});
 
 //share route
 app.post ("/api/v1/brain/share",userMiddleware,async(req,res)=>{
 const share= req.body.share;
 if(share){
   const existingLink= await LinkModel.findOne({
-    userId: req.userId
+    userId: req.userId!
   });
   if(existingLink){
     res.json({
@@ -162,7 +164,7 @@ if(share){
   }
   const hash= random(10);
   await LinkModel.create({
-    userId: req.userId,
+    userId: req.userId!,
     hash: hash
 
   })
@@ -171,7 +173,7 @@ if(share){
   })
 }else{
   await LinkModel.deleteOne({
-    userId: req.userId
+    userId: req.userId!
   });
   res.json({
     message:"removed Link"
