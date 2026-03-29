@@ -1,4 +1,4 @@
-
+import Button from './components/UI/Button'
 import './App.css'
 
 function App() {
@@ -6,7 +6,12 @@ function App() {
 
   return (
     <>
-     <div></div>
+     <div className=''>hi im anmol</div>
+     <Button 
+     title='click me'
+     size='md'
+     variant='primary'
+ />
     </>
   )
 }

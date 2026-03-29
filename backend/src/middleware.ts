@@ -23,8 +23,11 @@ export const userMiddleware = (
   }
 
   try {
-    const token= authHeader.startsWith('Bearer') ? authHeader.split(" ")[1] : authHeader;
-    const decoded = jwt.verify(authHeader as string, JWT_PASSWORD);
+   const token = authHeader.startsWith("Bearer ")
+  ? authHeader.split(" ")[1]
+  : authHeader;
+
+const decoded = jwt.verify(token as string, JWT_PASSWORD);
 
     if (typeof decoded === "string") {
       return res.status(403).json({ message: "Invalid token" });
